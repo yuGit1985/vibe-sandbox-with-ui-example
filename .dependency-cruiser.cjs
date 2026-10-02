@@ -94,8 +94,7 @@ module.exports = {
 
     {
       name: "ui-components-not-to-features",
-      comment:
-        "Generic UI components must not depend on feature-specific UI.",
+      comment: "Generic UI components must not depend on feature-specific UI.",
       severity: "error",
       from: {
         path: "^src/ui/components(?:/|$)",
