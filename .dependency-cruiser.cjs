@@ -14,10 +14,10 @@ module.exports = {
       name: "not-to-test",
       severity: "error",
       from: {
-        pathNot: "^tests",
+        pathNot: "^tests(?:/|$)",
       },
       to: {
-        path: "^tests",
+        path: "^tests(?:/|$)",
       },
     },
 
@@ -30,14 +30,18 @@ module.exports = {
       },
     },
 
+    // -------------------------------------------------------------------------
+    // Application boundaries
+    // -------------------------------------------------------------------------
+
     {
       name: "ui-not-to-fakes",
       severity: "error",
       from: {
-        path: "^src/ui",
+        path: "^src/ui(?:/|$)",
       },
       to: {
-        path: "^src/fakes",
+        path: "^src/fakes(?:/|$)",
       },
     },
 
@@ -45,21 +49,21 @@ module.exports = {
       name: "usecases-not-to-fakes",
       severity: "error",
       from: {
-        path: "^src/usecases",
+        path: "^src/usecases(?:/|$)",
       },
       to: {
-        path: "^src/fakes",
+        path: "^src/fakes(?:/|$)",
       },
     },
 
     {
-      name: "ports-not-to-ui",
+      name: "ports-not-to-ui-app-inputs",
       severity: "error",
       from: {
-        path: "^src/ports",
+        path: "^src/ports(?:/|$)",
       },
       to: {
-        path: "^src/(ui|app|inputs)",
+        path: "^src/(?:ui|app|inputs)(?:/|$)",
       },
     },
 
@@ -67,10 +71,75 @@ module.exports = {
       name: "ports-not-to-next",
       severity: "error",
       from: {
-        path: "^src/ports",
+        path: "^src/ports(?:/|$)",
       },
       to: {
-        path: "node_modules/next",
+        path: "node_modules/next(?:/|$)",
+      },
+    },
+
+    // -------------------------------------------------------------------------
+    // UI internal boundaries
+    //
+    // screens
+    //   ↓
+    // features
+    //   ↓
+    // components
+    //
+    // A screen may compose features and generic components.
+    // A feature may use generic components.
+    // Lower-level UI must not depend upward.
+    // -------------------------------------------------------------------------
+
+    {
+      name: "ui-components-not-to-features",
+      comment:
+        "Generic UI components must not depend on feature-specific UI.",
+      severity: "error",
+      from: {
+        path: "^src/ui/components(?:/|$)",
+      },
+      to: {
+        path: "^src/ui/features(?:/|$)",
+      },
+    },
+
+    {
+      name: "ui-components-not-to-screens",
+      comment: "Generic UI components must not depend on screens.",
+      severity: "error",
+      from: {
+        path: "^src/ui/components(?:/|$)",
+      },
+      to: {
+        path: "^src/ui/screens(?:/|$)",
+      },
+    },
+
+    {
+      name: "ui-features-not-to-screens",
+      comment: "Feature UI must not depend on screen composition.",
+      severity: "error",
+      from: {
+        path: "^src/ui/features(?:/|$)",
+      },
+      to: {
+        path: "^src/ui/screens(?:/|$)",
+      },
+    },
+
+    {
+      name: "ui-features-not-to-other-features",
+      comment:
+        "A UI feature must not directly depend on another UI feature. Compose multiple features at screen level.",
+      severity: "error",
+      from: {
+        path: "^src/ui/features/([^/]+)(?:/|$)",
+      },
+      to: {
+        path: "^src/ui/features(?:/|$)",
+        pathNot: "^src/ui/features/$1(?:/|$)",
       },
     },
   ],
