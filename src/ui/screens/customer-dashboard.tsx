@@ -6,11 +6,13 @@ import type {
   CustomerRank,
   CustomerStatus,
 } from "@/ports/customer-repository";
+import type { User } from "@/ports/user-repository";
 import {
   BellIcon,
   CalendarIcon,
   ChartIcon,
   ChevronIcon,
+  LogoutIcon,
   MailIcon,
   PhoneIcon,
   SearchIcon,
@@ -22,6 +24,7 @@ import {
 import styles from "./customer-dashboard.module.css";
 
 type Props = {
+  user: User;
   customers: Customer[];
   selectedCustomer: Customer | undefined;
   query: string;
@@ -29,6 +32,7 @@ type Props = {
   onQueryChange: (query: string) => void;
   onSelectCustomer: (id: string) => void;
   onAddNote: (body: string) => void;
+  logoutAction: () => Promise<void>;
 };
 
 const statusLabels: Record<CustomerStatus, string> = {
@@ -47,6 +51,7 @@ const formatDate = (date: string) => {
 };
 
 export function CustomerDashboard({
+  user,
   customers,
   selectedCustomer,
   query,
@@ -54,6 +59,7 @@ export function CustomerDashboard({
   onQueryChange,
   onSelectCustomer,
   onAddNote,
+  logoutAction,
 }: Props) {
   const [note, setNote] = useState("");
   const submitNote = () => {
@@ -90,12 +96,16 @@ export function CustomerDashboard({
           </a>
         </nav>
         <div className={styles.sidebarFooter}>
-          <div className={styles.userAvatar}>田</div>
+          <div className={styles.userAvatar}>{user.initials}</div>
           <div>
-            <strong>田中 彩</strong>
-            <span>セールスチーム</span>
+            <strong>{user.displayName}</strong>
+            <span>{user.team}</span>
           </div>
-          <ChevronIcon />
+          <form action={logoutAction}>
+            <button type="submit" aria-label="ログアウト" title="ログアウト">
+              <LogoutIcon />
+            </button>
+          </form>
         </div>
       </aside>
 
@@ -119,7 +129,7 @@ export function CustomerDashboard({
             <BellIcon />
             <span className={styles.notificationDot} />
           </button>
-          <div className={styles.headerAvatar}>田</div>
+          <div className={styles.headerAvatar}>{user.initials}</div>
         </header>
 
         <div className={styles.content}>

@@ -4,10 +4,16 @@ import { useState } from "react";
 import { FixedClock } from "@/fakes/fixed-clock";
 import { InMemoryCustomerRepository } from "@/fakes/in-memory-customer-repository";
 import type { Customer } from "@/ports/customer-repository";
+import type { User } from "@/ports/user-repository";
 import { CustomerDashboard } from "@/ui/screens/customer-dashboard";
 import { CustomerManagement } from "@/usecases/customer-management";
 
-export function CustomerDashboardContainer() {
+type Props = {
+  user: User;
+  logoutAction: () => Promise<void>;
+};
+
+export function CustomerDashboardContainer({ user, logoutAction }: Props) {
   const [management] = useState(
     () =>
       new CustomerManagement(
@@ -37,6 +43,7 @@ export function CustomerDashboardContainer() {
 
   return (
     <CustomerDashboard
+      user={user}
       customers={customers}
       selectedCustomer={selectedCustomer}
       query={query}
@@ -44,6 +51,7 @@ export function CustomerDashboardContainer() {
       onQueryChange={handleQueryChange}
       onSelectCustomer={setSelectedId}
       onAddNote={handleAddNote}
+      logoutAction={logoutAction}
     />
   );
 }

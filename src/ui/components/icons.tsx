@@ -98,3 +98,18 @@ export function SparkleIcon(props: IconProps) {
     </svg>
   );
 }
+export function LockIcon(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...baseProps} {...props}>
+      <rect x="4" y="10" width="16" height="11" rx="2" />
+      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+export function LogoutIcon(props: IconProps) {
+  return (
+    <svg aria-hidden="true" {...baseProps} {...props}>
+      <path d="M10 17l5-5-5-5M15 12H3M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+    </svg>
+  );
+}

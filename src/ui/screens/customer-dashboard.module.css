@@ -124,6 +124,25 @@
   width: 14px;
   color: #78988e;
 }
+.sidebarFooter form {
+  margin: 0;
+}
+.sidebarFooter button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  color: #78988e;
+  background: transparent;
+  cursor: pointer;
+}
+.sidebarFooter button:hover {
+  color: #fff;
+  background: #ffffff12;
+}
 .userAvatar,
 .headerAvatar,
 .composerAvatar {
