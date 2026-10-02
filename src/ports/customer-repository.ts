@@ -27,8 +27,26 @@ export type Customer = {
   notes: CustomerNote[];
 };
 
+export type EditableCustomer = Pick<
+  Customer,
+  | "name"
+  | "nameKana"
+  | "company"
+  | "department"
+  | "title"
+  | "email"
+  | "phone"
+  | "status"
+  | "rank"
+  | "owner"
+  | "lastContactedAt"
+  | "nextAction"
+>;
+
 export interface CustomerRepository {
   list(): Customer[];
   findById(id: string): Customer | undefined;
+  update(id: string, details: EditableCustomer): Customer;
+  delete(id: string): void;
   addNote(customerId: string, note: CustomerNote): Customer;
 }

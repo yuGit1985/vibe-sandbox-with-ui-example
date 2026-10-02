@@ -4,6 +4,7 @@ import type {
   Customer,
   CustomerNote,
   CustomerRepository,
+  EditableCustomer,
 } from "@/ports/customer-repository";
 import { CustomerManagement } from "./customer-management";
 
@@ -37,6 +38,19 @@ class TestRepository implements CustomerRepository {
     return id === this.customer.id ? this.customer : undefined;
   }
 
+  update(id: string, details: EditableCustomer): Customer {
+    if (id !== this.customer.id)
+      throw new Error("顧客が見つかりませんでした。");
+    this.customer = { ...this.customer, ...details };
+    return this.customer;
+  }
+
+  delete(id: string): void {
+    if (id !== this.customer.id)
+      throw new Error("顧客が見つかりませんでした。");
+    this.customer = { ...this.customer, id: "deleted" };
+  }
+
   addNote(_customerId: string, note: CustomerNote): Customer {
     this.customer = { ...this.customer, notes: [note] };
     return this.customer;
@@ -44,6 +58,20 @@ class TestRepository implements CustomerRepository {
 }
 
 const clock: Clock = { today: () => "2026-10-03" };
+const editableCustomer = (customer: Customer): EditableCustomer => ({
+  name: customer.name,
+  nameKana: customer.nameKana,
+  company: customer.company,
+  department: customer.department,
+  title: customer.title,
+  email: customer.email,
+  phone: customer.phone,
+  status: customer.status,
+  rank: customer.rank,
+  owner: customer.owner,
+  lastContactedAt: customer.lastContactedAt,
+  nextAction: customer.nextAction,
+});
 
 describe("CustomerManagement", () => {
   it("名前または読み仮名で顧客を検索する", () => {
@@ -80,5 +108,45 @@ describe("CustomerManagement", () => {
     expect(() => service.addNote("1", "   ", "田中")).toThrow(
       "メモを入力してください。",
     );
+  });
+
+  it("顧客情報の空白を除いて更新する", () => {
+    const service = new CustomerManagement(new TestRepository(), clock);
+    const updated = service.updateCustomer("1", {
+      ...editableCustomer(sampleCustomer),
+      name: "  佐藤 美咲（更新）  ",
+      company: "  新しい会社  ",
+      email: "  updated@example.com  ",
+    });
+
+    expect(updated).toMatchObject({
+      name: "佐藤 美咲（更新）",
+      company: "新しい会社",
+      email: "updated@example.com",
+    });
+  });
+
+  it("必須の顧客情報とメール形式を検証する", () => {
+    const service = new CustomerManagement(new TestRepository(), clock);
+    const details = editableCustomer(sampleCustomer);
+
+    expect(() =>
+      service.updateCustomer("1", { ...details, name: " " }),
+    ).toThrow("顧客名を入力してください。");
+    expect(() =>
+      service.updateCustomer("1", { ...details, company: " " }),
+    ).toThrow("会社名を入力してください。");
+    expect(() =>
+      service.updateCustomer("1", { ...details, email: "invalid" }),
+    ).toThrow("正しいメールアドレスを入力してください。");
+  });
+
+  it("顧客を削除する", () => {
+    const repository = new TestRepository();
+    const service = new CustomerManagement(repository, clock);
+
+    service.deleteCustomer("1");
+
+    expect(service.getCustomer("1")).toBeUndefined();
   });
 });

@@ -2,6 +2,7 @@ import type {
   Customer,
   CustomerNote,
   CustomerRepository,
+  EditableCustomer,
 } from "@/ports/customer-repository";
 
 const customers: Customer[] = [
@@ -164,6 +165,26 @@ export class InMemoryCustomerRepository implements CustomerRepository {
   findById(id: string): Customer | undefined {
     const customer = this.customers.find((item) => item.id === id);
     return customer ? clone(customer) : undefined;
+  }
+
+  update(id: string, details: EditableCustomer): Customer {
+    const customerIndex = this.customers.findIndex((item) => item.id === id);
+    const customer = this.customers[customerIndex];
+    if (!customer) {
+      throw new Error("顧客が見つかりませんでした。");
+    }
+
+    const updatedCustomer = { ...customer, ...details };
+    this.customers[customerIndex] = updatedCustomer;
+    return clone(updatedCustomer);
+  }
+
+  delete(id: string): void {
+    const customerIndex = this.customers.findIndex((item) => item.id === id);
+    if (customerIndex === -1) {
+      throw new Error("顧客が見つかりませんでした。");
+    }
+    this.customers.splice(customerIndex, 1);
   }
 
   addNote(customerId: string, note: CustomerNote): Customer {

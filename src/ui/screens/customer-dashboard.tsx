@@ -5,6 +5,7 @@ import type {
   Customer,
   CustomerRank,
   CustomerStatus,
+  EditableCustomer,
 } from "@/ports/customer-repository";
 import type { User } from "@/ports/user-repository";
 import {
@@ -12,6 +13,7 @@ import {
   CalendarIcon,
   ChartIcon,
   ChevronIcon,
+  EditIcon,
   LogoutIcon,
   MailIcon,
   PhoneIcon,
@@ -19,6 +21,7 @@ import {
   SendIcon,
   SettingsIcon,
   SparkleIcon,
+  TrashIcon,
   UsersIcon,
 } from "@/ui/components/icons";
 import styles from "./customer-dashboard.module.css";
@@ -33,6 +36,8 @@ type Props = {
   onSelectCustomer: (id: string) => void;
   onAddNote: (body: string) => void;
   onSendEmail: (subject: string, body: string) => void;
+  onUpdateCustomer: (details: EditableCustomer) => void;
+  onDeleteCustomer: () => void;
   logoutAction: () => Promise<void>;
 };
 
@@ -61,6 +66,8 @@ export function CustomerDashboard({
   onSelectCustomer,
   onAddNote,
   onSendEmail,
+  onUpdateCustomer,
+  onDeleteCustomer,
   logoutAction,
 }: Props) {
   const [note, setNote] = useState("");
@@ -228,6 +235,8 @@ export function CustomerDashboard({
                   onNoteChange={setNote}
                   onSubmitNote={submitNote}
                   onSendEmail={onSendEmail}
+                  onUpdateCustomer={onUpdateCustomer}
+                  onDeleteCustomer={onDeleteCustomer}
                 />
               ) : (
                 <div className={styles.noSelection}>
@@ -250,14 +259,25 @@ function CustomerDetail({
   onNoteChange,
   onSubmitNote,
   onSendEmail,
+  onUpdateCustomer,
+  onDeleteCustomer,
 }: {
   customer: Customer;
   note: string;
   onNoteChange: (value: string) => void;
   onSubmitNote: () => void;
   onSendEmail: (subject: string, body: string) => void;
+  onUpdateCustomer: (details: EditableCustomer) => void;
+  onDeleteCustomer: () => void;
 }) {
   const [isEmailComposerOpen, setIsEmailComposerOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false);
+  const [customerDraft, setCustomerDraft] = useState<EditableCustomer>(() =>
+    toEditableCustomer(customer),
+  );
+  const [editError, setEditError] = useState<string>();
   const [emailSubject, setEmailSubject] = useState("");
   const [emailBody, setEmailBody] = useState("");
   const [sentSubject, setSentSubject] = useState<string>();
@@ -269,6 +289,25 @@ function CustomerDetail({
     setEmailSubject("");
     setEmailBody("");
     setIsEmailComposerOpen(false);
+  };
+
+  const openEditor = () => {
+    setCustomerDraft(toEditableCustomer(customer));
+    setEditError(undefined);
+    setIsEditorOpen(true);
+  };
+
+  const submitCustomerUpdate = () => {
+    try {
+      onUpdateCustomer(customerDraft);
+      setIsEditorOpen(false);
+    } catch (error) {
+      setEditError(
+        error instanceof Error
+          ? error.message
+          : "顧客情報を更新できませんでした。",
+      );
+    }
   };
 
   return (
@@ -290,13 +329,18 @@ function CustomerDetail({
             {customer.company} · {customer.department}
           </p>
         </div>
-        <button
-          className={styles.moreButton}
-          type="button"
-          aria-label="その他の操作"
-        >
-          •••
-        </button>
+        <div className={styles.profileActions}>
+          <button type="button" onClick={openEditor}>
+            <EditIcon /> 編集
+          </button>
+          <button
+            className={styles.deleteAction}
+            type="button"
+            onClick={() => setIsDeleteConfirmationOpen(true)}
+          >
+            <TrashIcon /> 削除
+          </button>
+        </div>
       </div>
       {sentSubject && (
         <output className={styles.emailSuccess}>
@@ -500,6 +544,250 @@ function CustomerDetail({
           </section>
         </div>
       )}
+      {isEditorOpen && (
+        <div className={styles.modalBackdrop}>
+          <section
+            aria-labelledby="customer-editor-title"
+            aria-modal="true"
+            className={`${styles.emailModal} ${styles.editModal}`}
+            role="dialog"
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalIcon}>
+                <EditIcon />
+              </span>
+              <div>
+                <h3 id="customer-editor-title">顧客情報を編集</h3>
+                <p>連絡先や商談情報を更新できます</p>
+              </div>
+              <button
+                type="button"
+                aria-label="顧客編集画面を閉じる"
+                onClick={() => setIsEditorOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitCustomerUpdate();
+              }}
+            >
+              <div className={styles.editFormGrid}>
+                <EditorField
+                  label="顧客名"
+                  required
+                  value={customerDraft.name}
+                  onChange={(name) =>
+                    setCustomerDraft((draft) => ({ ...draft, name }))
+                  }
+                />
+                <EditorField
+                  label="ふりがな"
+                  value={customerDraft.nameKana}
+                  onChange={(nameKana) =>
+                    setCustomerDraft((draft) => ({ ...draft, nameKana }))
+                  }
+                />
+                <EditorField
+                  className={styles.wideField}
+                  label="会社名"
+                  required
+                  value={customerDraft.company}
+                  onChange={(company) =>
+                    setCustomerDraft((draft) => ({ ...draft, company }))
+                  }
+                />
+                <EditorField
+                  label="部署"
+                  value={customerDraft.department}
+                  onChange={(department) =>
+                    setCustomerDraft((draft) => ({ ...draft, department }))
+                  }
+                />
+                <EditorField
+                  label="役職"
+                  value={customerDraft.title}
+                  onChange={(title) =>
+                    setCustomerDraft((draft) => ({ ...draft, title }))
+                  }
+                />
+                <EditorField
+                  label="メール"
+                  required
+                  type="email"
+                  value={customerDraft.email}
+                  onChange={(email) =>
+                    setCustomerDraft((draft) => ({ ...draft, email }))
+                  }
+                />
+                <EditorField
+                  label="電話番号"
+                  type="tel"
+                  value={customerDraft.phone}
+                  onChange={(phone) =>
+                    setCustomerDraft((draft) => ({ ...draft, phone }))
+                  }
+                />
+                <label>
+                  <span>ステータス</span>
+                  <select
+                    value={customerDraft.status}
+                    onChange={(event) =>
+                      setCustomerDraft((draft) => ({
+                        ...draft,
+                        status: event.target.value as CustomerStatus,
+                      }))
+                    }
+                  >
+                    <option value="active">商談中</option>
+                    <option value="followUp">フォロー</option>
+                    <option value="inactive">休眠</option>
+                  </select>
+                </label>
+                <label>
+                  <span>顧客ランク</span>
+                  <select
+                    value={customerDraft.rank}
+                    onChange={(event) =>
+                      setCustomerDraft((draft) => ({
+                        ...draft,
+                        rank: event.target.value as CustomerRank,
+                      }))
+                    }
+                  >
+                    <option value="S">Sランク</option>
+                    <option value="A">Aランク</option>
+                    <option value="B">Bランク</option>
+                  </select>
+                </label>
+                <EditorField
+                  label="担当者"
+                  value={customerDraft.owner}
+                  onChange={(owner) =>
+                    setCustomerDraft((draft) => ({ ...draft, owner }))
+                  }
+                />
+                <EditorField
+                  label="最終接点"
+                  type="date"
+                  value={customerDraft.lastContactedAt}
+                  onChange={(lastContactedAt) =>
+                    setCustomerDraft((draft) => ({
+                      ...draft,
+                      lastContactedAt,
+                    }))
+                  }
+                />
+                <EditorField
+                  className={styles.wideField}
+                  label="次のアクション"
+                  value={customerDraft.nextAction}
+                  onChange={(nextAction) =>
+                    setCustomerDraft((draft) => ({ ...draft, nextAction }))
+                  }
+                />
+              </div>
+              {editError && <p className={styles.formError}>{editError}</p>}
+              <div className={styles.modalFooter}>
+                <button
+                  className={styles.cancelButton}
+                  type="button"
+                  onClick={() => setIsEditorOpen(false)}
+                >
+                  キャンセル
+                </button>
+                <button className={styles.sendButton} type="submit">
+                  変更を保存
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
+      {isDeleteConfirmationOpen && (
+        <div className={styles.modalBackdrop}>
+          <section
+            aria-labelledby="delete-confirmation-title"
+            aria-modal="true"
+            className={`${styles.emailModal} ${styles.confirmationModal}`}
+            role="alertdialog"
+          >
+            <div className={styles.confirmationContent}>
+              <span className={styles.dangerIcon}>
+                <TrashIcon />
+              </span>
+              <h3 id="delete-confirmation-title">顧客を削除しますか？</h3>
+              <p>
+                {customer.name}
+                さんの顧客情報とメモが削除されます。この操作は取り消せません。
+              </p>
+            </div>
+            <div className={styles.confirmationActions}>
+              <button
+                className={styles.cancelButton}
+                type="button"
+                onClick={() => setIsDeleteConfirmationOpen(false)}
+              >
+                キャンセル
+              </button>
+              <button
+                className={styles.dangerButton}
+                type="button"
+                onClick={onDeleteCustomer}
+              >
+                <TrashIcon /> 顧客を削除
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
+  );
+}
+
+function toEditableCustomer(customer: Customer): EditableCustomer {
+  return {
+    name: customer.name,
+    nameKana: customer.nameKana,
+    company: customer.company,
+    department: customer.department,
+    title: customer.title,
+    email: customer.email,
+    phone: customer.phone,
+    status: customer.status,
+    rank: customer.rank,
+    owner: customer.owner,
+    lastContactedAt: customer.lastContactedAt,
+    nextAction: customer.nextAction,
+  };
+}
+
+function EditorField({
+  className,
+  label,
+  onChange,
+  required = false,
+  type = "text",
+  value,
+}: {
+  className?: string | undefined;
+  label: string;
+  onChange: (value: string) => void;
+  required?: boolean;
+  type?: "date" | "email" | "tel" | "text";
+  value: string;
+}) {
+  return (
+    <label className={className}>
+      <span>{label}</span>
+      <input
+        required={required}
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+      />
+    </label>
   );
 }

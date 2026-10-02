@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FixedClock } from "@/fakes/fixed-clock";
 import { InMemoryCustomerRepository } from "@/fakes/in-memory-customer-repository";
 import { InMemoryEmailSender } from "@/fakes/in-memory-email-sender";
-import type { Customer } from "@/ports/customer-repository";
+import type { Customer, EditableCustomer } from "@/ports/customer-repository";
 import type { User } from "@/ports/user-repository";
 import { CustomerDashboard } from "@/ui/screens/customer-dashboard";
 import { CustomerEmail } from "@/usecases/customer-email";
@@ -47,6 +47,22 @@ export function CustomerDashboardContainer({ user, logoutAction }: Props) {
     customerEmail.send(selectedId, subject, body);
   };
 
+  const handleUpdateCustomer = (details: EditableCustomer) => {
+    management.updateCustomer(selectedId, details);
+    const results = management.listCustomers(query);
+    setCustomers(results);
+    if (!results.some(({ id }) => id === selectedId)) {
+      setSelectedId(results[0]?.id ?? "");
+    }
+  };
+
+  const handleDeleteCustomer = () => {
+    management.deleteCustomer(selectedId);
+    const remainingCustomers = management.listCustomers(query);
+    setCustomers(remainingCustomers);
+    setSelectedId(remainingCustomers[0]?.id ?? "");
+  };
+
   return (
     <CustomerDashboard
       user={user}
@@ -58,6 +74,8 @@ export function CustomerDashboardContainer({ user, logoutAction }: Props) {
       onSelectCustomer={setSelectedId}
       onAddNote={handleAddNote}
       onSendEmail={handleSendEmail}
+      onUpdateCustomer={handleUpdateCustomer}
+      onDeleteCustomer={handleDeleteCustomer}
       logoutAction={logoutAction}
     />
   );

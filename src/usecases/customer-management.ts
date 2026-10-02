@@ -1,5 +1,9 @@
 import type { Clock } from "@/ports/clock";
-import type { Customer, CustomerRepository } from "@/ports/customer-repository";
+import type {
+  Customer,
+  CustomerRepository,
+  EditableCustomer,
+} from "@/ports/customer-repository";
 
 export class CustomerManagement {
   constructor(
@@ -21,6 +25,38 @@ export class CustomerManagement {
 
   getCustomer(id: string): Customer | undefined {
     return this.repository.findById(id);
+  }
+
+  updateCustomer(id: string, details: EditableCustomer): Customer {
+    const normalizedDetails = {
+      ...details,
+      name: details.name.trim(),
+      nameKana: details.nameKana.trim(),
+      company: details.company.trim(),
+      department: details.department.trim(),
+      title: details.title.trim(),
+      email: details.email.trim(),
+      phone: details.phone.trim(),
+      owner: details.owner.trim(),
+      lastContactedAt: details.lastContactedAt.trim(),
+      nextAction: details.nextAction.trim(),
+    };
+
+    if (!normalizedDetails.name) {
+      throw new Error("顧客名を入力してください。");
+    }
+    if (!normalizedDetails.company) {
+      throw new Error("会社名を入力してください。");
+    }
+    if (!/^\S+@\S+\.\S+$/.test(normalizedDetails.email)) {
+      throw new Error("正しいメールアドレスを入力してください。");
+    }
+
+    return this.repository.update(id, normalizedDetails);
+  }
+
+  deleteCustomer(id: string): void {
+    this.repository.delete(id);
   }
 
   addNote(customerId: string, body: string, author: string): Customer {

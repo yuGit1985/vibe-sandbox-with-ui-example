@@ -3,6 +3,7 @@ import type {
   Customer,
   CustomerNote,
   CustomerRepository,
+  EditableCustomer,
 } from "@/ports/customer-repository";
 import type { EmailMessage, EmailSender } from "@/ports/email-sender";
 import { CustomerEmail } from "./customer-email";
@@ -34,6 +35,12 @@ class TestCustomerRepository implements CustomerRepository {
   findById(id: string): Customer | undefined {
     return id === customer.id ? customer : undefined;
   }
+
+  update(_id: string, details: EditableCustomer): Customer {
+    return { ...customer, ...details };
+  }
+
+  delete(_id: string): void {}
 
   addNote(_customerId: string, _note: CustomerNote): Customer {
     return customer;
