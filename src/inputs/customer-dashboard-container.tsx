@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { FixedClock } from "@/fakes/fixed-clock";
 import { InMemoryCustomerRepository } from "@/fakes/in-memory-customer-repository";
+import { InMemoryEmailSender } from "@/fakes/in-memory-email-sender";
 import type { Customer } from "@/ports/customer-repository";
 import type { User } from "@/ports/user-repository";
 import { CustomerDashboard } from "@/ui/screens/customer-dashboard";
+import { CustomerEmail } from "@/usecases/customer-email";
 import { CustomerManagement } from "@/usecases/customer-management";
 
 type Props = {
@@ -14,12 +16,12 @@ type Props = {
 };
 
 export function CustomerDashboardContainer({ user, logoutAction }: Props) {
+  const [customerRepository] = useState(() => new InMemoryCustomerRepository());
   const [management] = useState(
-    () =>
-      new CustomerManagement(
-        new InMemoryCustomerRepository(),
-        new FixedClock(),
-      ),
+    () => new CustomerManagement(customerRepository, new FixedClock()),
+  );
+  const [customerEmail] = useState(
+    () => new CustomerEmail(customerRepository, new InMemoryEmailSender()),
   );
   const [query, setQuery] = useState("");
   const [customers, setCustomers] = useState<Customer[]>(() =>
@@ -41,6 +43,10 @@ export function CustomerDashboardContainer({ user, logoutAction }: Props) {
     setCustomers(management.listCustomers(query));
   };
 
+  const handleSendEmail = (subject: string, body: string) => {
+    customerEmail.send(selectedId, subject, body);
+  };
+
   return (
     <CustomerDashboard
       user={user}
@@ -51,6 +57,7 @@ export function CustomerDashboardContainer({ user, logoutAction }: Props) {
       onQueryChange={handleQueryChange}
       onSelectCustomer={setSelectedId}
       onAddNote={handleAddNote}
+      onSendEmail={handleSendEmail}
       logoutAction={logoutAction}
     />
   );

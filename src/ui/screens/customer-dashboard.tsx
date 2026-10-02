@@ -32,6 +32,7 @@ type Props = {
   onQueryChange: (query: string) => void;
   onSelectCustomer: (id: string) => void;
   onAddNote: (body: string) => void;
+  onSendEmail: (subject: string, body: string) => void;
   logoutAction: () => Promise<void>;
 };
 
@@ -59,6 +60,7 @@ export function CustomerDashboard({
   onQueryChange,
   onSelectCustomer,
   onAddNote,
+  onSendEmail,
   logoutAction,
 }: Props) {
   const [note, setNote] = useState("");
@@ -220,10 +222,12 @@ export function CustomerDashboard({
             <div className={styles.detailPane}>
               {selectedCustomer ? (
                 <CustomerDetail
+                  key={selectedCustomer.id}
                   customer={selectedCustomer}
                   note={note}
                   onNoteChange={setNote}
                   onSubmitNote={submitNote}
+                  onSendEmail={onSendEmail}
                 />
               ) : (
                 <div className={styles.noSelection}>
@@ -245,12 +249,28 @@ function CustomerDetail({
   note,
   onNoteChange,
   onSubmitNote,
+  onSendEmail,
 }: {
   customer: Customer;
   note: string;
   onNoteChange: (value: string) => void;
   onSubmitNote: () => void;
+  onSendEmail: (subject: string, body: string) => void;
 }) {
+  const [isEmailComposerOpen, setIsEmailComposerOpen] = useState(false);
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailBody, setEmailBody] = useState("");
+  const [sentSubject, setSentSubject] = useState<string>();
+
+  const submitEmail = () => {
+    if (!emailSubject.trim() || !emailBody.trim()) return;
+    onSendEmail(emailSubject, emailBody);
+    setSentSubject(emailSubject.trim());
+    setEmailSubject("");
+    setEmailBody("");
+    setIsEmailComposerOpen(false);
+  };
+
   return (
     <div className={styles.detailContent}>
       <div className={styles.profileHeader}>
@@ -278,8 +298,30 @@ function CustomerDetail({
           •••
         </button>
       </div>
+      {sentSubject && (
+        <output className={styles.emailSuccess}>
+          <span className={styles.successIcon}>✓</span>
+          <span>
+            <strong>メールを送信しました</strong>
+            <small>
+              「{sentSubject}」を {customer.name}さんへ送信しました。
+            </small>
+          </span>
+          <button
+            type="button"
+            aria-label="送信完了メッセージを閉じる"
+            onClick={() => setSentSubject(undefined)}
+          >
+            ×
+          </button>
+        </output>
+      )}
       <div className={styles.contactGrid}>
-        <a href={`mailto:${customer.email}`}>
+        <button
+          className={styles.contactCard}
+          type="button"
+          onClick={() => setIsEmailComposerOpen(true)}
+        >
           <span className={styles.contactIcon}>
             <MailIcon />
           </span>
@@ -287,8 +329,9 @@ function CustomerDetail({
             <small>メール</small>
             <strong>{customer.email}</strong>
           </span>
-        </a>
-        <a href={`tel:${customer.phone}`}>
+          <span className={styles.contactAction}>作成</span>
+        </button>
+        <a className={styles.contactCard} href={`tel:${customer.phone}`}>
           <span className={styles.contactIcon}>
             <PhoneIcon />
           </span>
@@ -383,6 +426,80 @@ function CustomerDetail({
           )}
         </div>
       </section>
+      {isEmailComposerOpen && (
+        <div className={styles.modalBackdrop}>
+          <section
+            aria-labelledby="email-composer-title"
+            aria-modal="true"
+            className={styles.emailModal}
+            role="dialog"
+          >
+            <div className={styles.modalHeader}>
+              <span className={styles.modalIcon}>
+                <MailIcon />
+              </span>
+              <div>
+                <h3 id="email-composer-title">メールを作成</h3>
+                <p>{customer.name}さんへメッセージを送信します</p>
+              </div>
+              <button
+                type="button"
+                aria-label="メール作成画面を閉じる"
+                onClick={() => setIsEmailComposerOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitEmail();
+              }}
+            >
+              <label>
+                <span>宛先</span>
+                <input type="email" value={customer.email} readOnly />
+              </label>
+              <label>
+                <span>件名</span>
+                <input
+                  required
+                  type="text"
+                  placeholder="メールの件名を入力"
+                  value={emailSubject}
+                  onChange={(event) => setEmailSubject(event.target.value)}
+                />
+              </label>
+              <label>
+                <span>本文</span>
+                <textarea
+                  required
+                  rows={8}
+                  placeholder={`${customer.name}さんへのメッセージを入力...`}
+                  value={emailBody}
+                  onChange={(event) => setEmailBody(event.target.value)}
+                />
+              </label>
+              <div className={styles.modalFooter}>
+                <button
+                  className={styles.cancelButton}
+                  type="button"
+                  onClick={() => setIsEmailComposerOpen(false)}
+                >
+                  キャンセル
+                </button>
+                <button
+                  className={styles.sendButton}
+                  type="submit"
+                  disabled={!emailSubject.trim() || !emailBody.trim()}
+                >
+                  <SendIcon /> メールを送信
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

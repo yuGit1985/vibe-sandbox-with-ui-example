@@ -616,7 +616,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
-.contactGrid a {
+.contactCard {
   min-width: 0;
   display: flex;
   align-items: center;
@@ -625,13 +625,17 @@
   border: 1px solid #e3e5e1;
   border-radius: 9px;
   color: inherit;
+  background: #fff;
+  font: inherit;
+  text-align: left;
   text-decoration: none;
+  cursor: pointer;
 }
-.contactGrid a:hover {
+.contactCard:hover {
   border-color: #b7cec4;
   background: #f8fbf9;
 }
-.contactGrid a > span:last-child {
+.contactCard > span:nth-child(2) {
   min-width: 0;
 }
 .contactGrid small,
@@ -651,6 +655,12 @@
   font-size: 9px;
   font-weight: 550;
 }
+.contactAction {
+  margin-left: auto;
+  color: #3d7968;
+  font-size: 8px;
+  font-weight: 700;
+}
 .contactIcon {
   display: grid;
   place-items: center;
@@ -663,6 +673,48 @@
 }
 .contactIcon svg {
   width: 14px;
+}
+.emailSuccess {
+  display: grid;
+  grid-template-columns: 28px 1fr 20px;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 13px;
+  padding: 10px 12px;
+  border: 1px solid #cce1d7;
+  border-radius: 9px;
+  color: #37695b;
+  background: #eff8f3;
+}
+.successIcon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: #fff;
+  background: #4f8a76;
+  font-size: 12px;
+  font-weight: 700;
+}
+.emailSuccess strong,
+.emailSuccess small {
+  display: block;
+}
+.emailSuccess strong {
+  font-size: 9px;
+}
+.emailSuccess small {
+  margin-top: 2px;
+  color: #67877c;
+  font-size: 8px;
+}
+.emailSuccess button {
+  border: 0;
+  color: #78968c;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
 }
 .infoStrip {
   display: grid;
@@ -875,6 +927,144 @@
   text-align: center;
   font-size: 9px;
 }
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: #112a2470;
+  backdrop-filter: blur(3px);
+}
+.emailModal {
+  width: min(520px, 100%);
+  overflow: hidden;
+  border: 1px solid #d9e1dd;
+  border-radius: 15px;
+  background: #fff;
+  box-shadow: 0 24px 80px #10231e35;
+}
+.modalHeader {
+  display: grid;
+  grid-template-columns: 38px 1fr 28px;
+  align-items: center;
+  gap: 11px;
+  padding: 19px 22px;
+  border-bottom: 1px solid #e8eae6;
+  background: #fafbf9;
+}
+.modalIcon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  color: #376b5c;
+  background: #e5f1ec;
+}
+.modalIcon svg {
+  width: 17px;
+}
+.modalHeader h3,
+.modalHeader p {
+  margin: 0;
+}
+.modalHeader h3 {
+  font-size: 15px;
+}
+.modalHeader p {
+  margin-top: 3px;
+  color: #82908b;
+  font-size: 9px;
+}
+.modalHeader > button {
+  border: 0;
+  color: #81908a;
+  background: transparent;
+  font-size: 22px;
+  cursor: pointer;
+}
+.emailModal form {
+  display: grid;
+  gap: 14px;
+  padding: 22px;
+}
+.emailModal label {
+  display: grid;
+  gap: 6px;
+}
+.emailModal label > span {
+  color: #526861;
+  font-size: 9px;
+  font-weight: 700;
+}
+.emailModal input,
+.emailModal textarea {
+  width: 100%;
+  border: 1px solid #dce1dd;
+  border-radius: 8px;
+  outline: none;
+  color: #263c35;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+  transition: 0.18s ease;
+}
+.emailModal input {
+  height: 39px;
+  padding: 0 11px;
+}
+.emailModal input[readonly] {
+  color: #71817b;
+  background: #f6f7f5;
+}
+.emailModal textarea {
+  min-height: 150px;
+  padding: 11px;
+  resize: vertical;
+  line-height: 1.65;
+}
+.emailModal input:focus,
+.emailModal textarea:focus {
+  border-color: #79a998;
+  box-shadow: 0 0 0 3px #85b9a524;
+}
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 3px;
+}
+.modalFooter button {
+  min-height: 36px;
+  border-radius: 8px;
+  font-size: 9px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.cancelButton {
+  padding: 0 15px;
+  border: 1px solid #d9deda;
+  color: #667871;
+  background: #fff;
+}
+.sendButton {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 16px;
+  border: 1px solid #245c4e;
+  color: #fff;
+  background: #245c4e;
+}
+.sendButton svg {
+  width: 13px;
+}
+.sendButton:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
 @media (max-width: 1050px) {
   .sidebar {
     width: 202px;
@@ -990,5 +1180,20 @@
   }
   .composerFooter {
     justify-content: flex-end;
+  }
+  .modalBackdrop {
+    align-items: end;
+    padding: 0;
+  }
+  .emailModal {
+    width: 100%;
+    border-radius: 16px 16px 0 0;
+  }
+  .modalHeader,
+  .emailModal form {
+    padding: 17px;
+  }
+  .emailModal textarea {
+    min-height: 125px;
   }
 }
