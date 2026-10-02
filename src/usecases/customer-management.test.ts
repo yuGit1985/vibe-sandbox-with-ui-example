@@ -17,6 +17,7 @@ const sampleCustomer: Customer = {
   email: "test@example.com",
   phone: "00-0000-0000",
   status: "active",
+  rank: "S",
   owner: "田中",
   lastContactedAt: "2026-10-01",
   nextAction: "連絡する",
@@ -50,6 +51,11 @@ describe("CustomerManagement", () => {
     expect(service.listCustomers("佐藤")).toHaveLength(1);
     expect(service.listCustomers("みさき")).toHaveLength(1);
     expect(service.listCustomers("鈴木")).toHaveLength(0);
+  });
+
+  it("顧客のランクを含めて一覧を返す", () => {
+    const service = new CustomerManagement(new TestRepository(), clock);
+    expect(service.listCustomers()[0]?.rank).toBe("S");
   });
 
   it("空白を除いたメモを追加する", () => {

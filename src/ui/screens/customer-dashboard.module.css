@@ -447,6 +447,43 @@
   color: #7f8d88;
   font-size: 9px;
 }
+.customerIdentity .customerMeta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: visible;
+}
+.customerMeta > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  flex: 0 0 auto;
+  padding: 3px 6px;
+  border: 1px solid currentColor;
+  border-radius: 5px;
+  font-size: 7px;
+  font-weight: 750;
+  line-height: 1;
+  white-space: nowrap;
+}
+.rankS {
+  color: #8a641e;
+  background: #fff7dc;
+}
+.rankA {
+  color: #426b62;
+  background: #e9f4ef;
+}
+.rankB {
+  color: #65716d;
+  background: #f0f2f1;
+}
 .status {
   display: inline-flex;
   align-items: center;
@@ -610,7 +647,7 @@
 }
 .infoStrip {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin: 13px 0;
   padding: 12px 15px;
@@ -630,6 +667,10 @@
 }
 .infoStrip strong {
   font-size: 10px;
+}
+.infoStrip .rankBadge {
+  display: inline-flex;
+  font-size: 8px;
 }
 .nextAction {
   display: grid;

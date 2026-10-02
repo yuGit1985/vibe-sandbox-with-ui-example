@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import type { Customer, CustomerStatus } from "@/ports/customer-repository";
+import type {
+  Customer,
+  CustomerRank,
+  CustomerStatus,
+} from "@/ports/customer-repository";
 import {
   BellIcon,
   CalendarIcon,
@@ -31,6 +35,11 @@ const statusLabels: Record<CustomerStatus, string> = {
   active: "商談中",
   followUp: "フォロー",
   inactive: "休眠",
+};
+const rankClassNames: Record<CustomerRank, string | undefined> = {
+  S: styles.rankS,
+  A: styles.rankA,
+  B: styles.rankB,
 };
 const formatDate = (date: string) => {
   const [, month, day] = date.split("-");
@@ -171,7 +180,14 @@ export function CustomerDashboard({
                     </span>
                     <span className={styles.customerIdentity}>
                       <strong>{customer.name}</strong>
-                      <small>{customer.company}</small>
+                      <small className={styles.customerMeta}>
+                        <span>{customer.company}</span>
+                        <span
+                          className={`${styles.rankBadge} ${rankClassNames[customer.rank]}`}
+                        >
+                          {customer.rank}ランク
+                        </span>
+                      </small>
                     </span>
                     <span
                       className={`${styles.status} ${styles[customer.status]}`}
@@ -273,6 +289,14 @@ function CustomerDetail({
         </a>
       </div>
       <div className={styles.infoStrip}>
+        <div>
+          <small>顧客ランク</small>
+          <strong
+            className={`${styles.rankBadge} ${rankClassNames[customer.rank]}`}
+          >
+            {customer.rank}ランク
+          </strong>
+        </div>
         <div>
           <small>役職</small>
           <strong>{customer.title}</strong>
